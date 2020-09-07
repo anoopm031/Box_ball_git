@@ -123,16 +123,19 @@ class Ball_agent:
 
     '''to find the real-time distance between gate and box'''
     def move_ball(self,box_agent_list, block_ratio_dict):
-        #print("gate ",gate_list)
-        #print("box ",box_agent_list)
-        #print("ratio ",block_ratio_dict.values())
+        box_agent_pos_list=[]
+        for box_agent in box_agent_list:
+            box_agent_pos_list.append(box_agent.position.copy())
+        self.move_ball_new(box_agent_list,box_agent_pos_list,block_ratio_dict)
+        
+    def move_ball_new(self,box_agent_list,box_agent_pos_list, block_ratio_dict):
         '''block_ratio_dict contains length_ratios'''
         gate_arc_list=[]   #list containing radiuses
-        for gate, box, block_ratio in zip(self.guarding_gates, box_agent_list, block_ratio_dict.values()):
+        for gate,box, box_agent_position, block_ratio in zip(self.guarding_gates,box_agent_list,box_agent_pos_list, block_ratio_dict.values()):
             #print(gate.name,box.name)
             if box.name == gate.name:
                 distance = math.sqrt(
-                    (box.position[0] - gate.position[0]) ** 2 + (box.position[1] - gate.position[1]) ** 2)
+                    (box_agent_position[0] - gate.position[0]) ** 2 + (box_agent_position[1] - gate.position[1]) ** 2)
                 gate_arc = distance / block_ratio
                 gate_arc_list.append(gate_arc)
 
