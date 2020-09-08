@@ -46,17 +46,14 @@ def game():
     '''as of now only single ball is there, so no need to be careful on naming and gate-ball relationships. 1 ball, 2 gate'''
     #ball_agent
     agent_guard_gates=gate_list
-    ball_initial_position=[400,750]
-    ball_agent_1=Ball_agent("1",ball_initial_position,agent_guard_gates,MAROON)
+    ball_agent_1=Ball_agent("1",[400,750],agent_guard_gates,MAROON)
     ball_agent_list.append(ball_agent_1)
 
     block_ratio_dict = gate_ball_len_ratio(gate_list, ball_agent_list, box_agent_list)
     running=True
-    iter_no=0
+
 
     while running:
-        print(iter_no)
-        iter_no+=1
         ground.fill(BLACK)
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
@@ -68,8 +65,7 @@ def game():
             obstruction.draw_obstruction()
 
         for box_agent in box_agent_list:
-            #box_agent.move_box()
-            box_agent.move_box_new()
+            box_agent.move_box()
 
         for gate in gate_list:
             gate.draw_gate()
@@ -77,6 +73,15 @@ def game():
         for ball_agent in ball_agent_list:
             ball_agent.move_ball(box_agent_list,block_ratio_dict)
 
+        movable_boxes= sum(box.movable for box in box_agent_list)
+        if movable_boxes==0:
+            finished=True
+            while finished:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        end_game()
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        end_game()
 
         clock.tick(60)
         pygame.display.flip()

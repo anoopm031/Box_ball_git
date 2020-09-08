@@ -28,27 +28,24 @@ clock=pygame.time.Clock()
 #randomly moving agents
 class Box_agents:
     def __init__(self,name,x_lim,y_lim,x_spawn_lim,y_spawn_lim,gate_position,color):
-        #position should be a list
+        '''position should be a list'''
         self.name=name
-        #self.box_number=box_number
         self.ini_position=[random.choice(range(x_spawn_lim[0],x_spawn_lim[1])),random.choice(range(y_spawn_lim[0],y_spawn_lim[1])),0] #gives the initialisation position
-        print(self.ini_position)
         self.position=self.ini_position
         self.req_gate_position=gate_position
         self.color=color
         self.size=30
-        self.x_lim=x_lim  #movable area for the agent. x coordinates
-        self.y_lim=y_lim  #movable area for the agent. y coordinates
+        self.x_lim=x_lim                           #movable area for the agent. x coordinates
+        self.y_lim=y_lim                             #movable area for the agent. y coordinates
         self.z_lim=[0,0]
         self.movable=True
-        #slope of line joining box_initial position and gate
+
+        '''slope of line joining box_initial position and gate'''
         slope=(self.ini_position[1]-self.req_gate_position[1])/(self.ini_position[0]-self.req_gate_position[0])
-        print(f"slope,{slope}")
+
         if slope>=0:
-            #self.x_vel=(random.choice(range(1,2)))/1000
             self.x_vel = random.uniform(1, 2)/100
             self.x_acc = random.uniform(0, 2)/10000
-            #print(f"x_vel_1,x_acc= {self.x_vel},{self.x_acc}")
         else:
             self.x_vel = -random.uniform(1, 2) / 100
             self.x_acc = -random.uniform(0, 2) / 10000
@@ -57,29 +54,30 @@ class Box_agents:
         self.y_acc = slope * self.x_acc
         self.z_vel=0
         self.z_acc=0
-        print(f"slope {slope}, x_vel {self.x_vel}, y_vel {self.y_vel}, x_acc {self.x_acc}, y_acc {self.y_acc}")
-        #each call of move_box_new will be considered synonym to passing of time
+        print(f"ini_position {self.ini_position}, slope {slope}, x_vel {self.x_vel}, y_vel {self.y_vel}, x_acc {self.x_acc}, y_acc {self.y_acc}")
+        '''each call of move_box_new will be considered synonym to passing of time'''
         self.time_lapsed=0
         #this will be incremented appropriately in move_box_new method
 
 
     def move_box(self):
         x_vel=random.choice(range(-10,11))
-        y_vel=random.choice(range(-10,12)) #adjusting this range can adjust the approach time of agents to gates
+        y_vel=random.choice(range(-10,12))      #adjusting this range can adjust the approach time of agents to gates
         x_new=self.position[0]+x_vel
         y_new=self.position[1]+y_vel
-        #checking the boundary
+
+        '''checking the boundary'''
         if x_new>self.x_lim[0] and x_new<self.x_lim[1] and y_new>self.y_lim[0] and y_new<self.y_lim[1]:
             self.position[0]=x_new
             self.position[1]=y_new
         else:
-            #again generating a random vel if the box went out of boundary in the previous try
+            '''again generating a random vel if the box went out of boundary in the previous try'''
             self.move_box()
-        #drawing the box. Image blitting can also be used
+        '''drawing the box. Image blitting can also be used'''
         pygame.draw.rect(ground,self.color,pygame.Rect(self.position[0],self.position[1],30,30))
 
     def move_box_new(self):
-        #checking boundary
+        '''checking boundary'''
         if math.sqrt(((self.position[0]-self.req_gate_position[0])**2)+((self.position[0]-self.req_gate_position[0])**2)) >5:
            pass
         else:
@@ -91,8 +89,6 @@ class Box_agents:
             self.time_lapsed+=1
             pygame.draw.rect(ground, self.color, pygame.Rect(self.position[0], self.position[1], 30, 30))
         else:
-            self.position=[0,0,0] #shortcut for letting the ball track the other box
-            #print(f"Reached end- current set position is {self.position}")
             pygame.draw.rect(ground, self.color, pygame.Rect(self.req_gate_position[0], self.req_gate_position[1], 30, 30))
 
 
@@ -116,35 +112,35 @@ class Ball_agent:
         self.guarding_gates=agent_guarding_gates_list   #the gates guarded by the ball, It should be 2. 2 gates per ball for now
         self.length_ratio=0
 
-    #setting the length_ratio
+
     def set_move_ratio(self,len_ratio):
+        '''setting the length_ratio'''
         self.length_ratio=len_ratio
         return 1
 
     '''to find the real-time distance between gate and box'''
     def move_ball(self,box_agent_list, block_ratio_dict):
-        box_agent_pos_list=[]
-        for box_agent in box_agent_list:
-            box_agent_pos_list.append(box_agent.position.copy())
-        self.move_ball_new(box_agent_list,box_agent_pos_list,block_ratio_dict)
-        
-    def move_ball_new(self,box_agent_list,box_agent_pos_list, block_ratio_dict):
         '''block_ratio_dict contains length_ratios'''
         gate_arc_list=[]   #list containing radiuses
-        for gate,box, box_agent_position, block_ratio in zip(self.guarding_gates,box_agent_list,box_agent_pos_list, block_ratio_dict.values()):
+        for gate, box, block_ratio in zip(self.guarding_gates, box_agent_list, block_ratio_dict.values()):
             #print(gate.name,box.name)
             if box.name == gate.name:
                 distance = math.sqrt(
-                    (box_agent_position[0] - gate.position[0]) ** 2 + (box_agent_position[1] - gate.position[1]) ** 2)
+                    (box.position[0] - gate.position[0]) ** 2 + (box.position[1] - gate.position[1]) ** 2)
                 gate_arc = distance / block_ratio
                 gate_arc_list.append(gate_arc)
 
 
         '''to draw the intersecting circles that's being used for movement of ball'''
+
         for gate_arc_length,gate in zip(gate_arc_list,self.guarding_gates):
             '''draw arcs with each length, find intersections, and check whether that exists and if exists
             #if exists, whether or not inside the balls allowed movement area'''
-            #pygame.draw.circle(ground,RED,gate.position,int(gate_arc_length),1)
+
+            try:
+                pygame.draw.circle(ground,RED,gate.position,int(gate_arc_length),1)
+            except:
+                break
             pass
 
         '''distance between two gates'''
@@ -154,9 +150,8 @@ class Ball_agent:
         #print(f"overlapping is {overlapping}")
 
         if overlapping:
-
-            #find out the overlapping points and find out the one that's lying inside the balls movement area.
-            #solve two circles two find out the intersection points
+            '''find out the overlapping points and find out the one that's lying inside the balls movement area.
+            #solve two circles two find out the intersection points'''
             intersection_1, intersection_2 = self.find_intersection(gate_arc_list)
             for intersection in intersection_1,intersection_2:
                 if self.check_boundary(intersection):
@@ -177,9 +172,9 @@ class Ball_agent:
             random_x = random.choice(range(round(rangemin), round(rangemax)))
             self.position=self.circle_y_points(random_x,closest_gate,closest_box_arc)
 
-            #a random x will be choosen from relevant area and will be subsituted in circle equation and find a self.position point
+            '''a random x will be choosen from relevant area and will be subsituted in circle equation and find a self.position point
             #find out the rectangle that's enclosing the arc and select a random x or y and put in the closest_box_arc circle's equation
-            #to find out the next position of the ball
+            #to find out the next position of the ball'''
 
         #print(self.position)
         pygame.draw.circle(ground, self.color,self.position, 10)
