@@ -136,11 +136,12 @@ class Ball_agent:
         for gate_arc_length,gate in zip(gate_arc_list,self.guarding_gates):
             '''draw arcs with each length, find intersections, and check whether that exists and if exists
             #if exists, whether or not inside the balls allowed movement area'''
-
+            '''
             try:
                 pygame.draw.circle(ground,RED,gate.position,int(gate_arc_length),1)
             except:
                 break
+            '''
             pass
 
         '''distance between two gates'''
